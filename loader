@@ -1,0 +1,34 @@
+-- // Loader — by NG/Cooler
+
+-- // Config
+local Branch = "main"
+local BaseURL = "https://raw.githubusercontent.com/stgcent-dotcom/PRACTICAL/refs/heads/" .. Branch .. "/"
+
+-- // Services
+local Players = game:GetService("Players")
+
+-- // Variables
+local LocalPlayer = Players.LocalPlayer
+
+-- // GameId -> Script
+local GameMap = {
+    [7529591378] = "practical.lua", -- Practical
+    [9908641400] = "ff3.lua",       -- FF3
+}
+
+-- // Loader
+local GameId = game.GameId
+local ScriptFile = GameMap[GameId]
+
+if not ScriptFile then
+    LocalPlayer:Kick("[-]: This game is not supported.")
+    return
+end
+
+local Success, Error = pcall(function()
+    loadstring(game:HttpGet(BaseURL .. ScriptFile))()
+end)
+
+if not Success then
+    LocalPlayer:Kick("[-]:\nFailed to load script.\n" .. tostring(Error))
+end
