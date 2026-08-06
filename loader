@@ -1,42 +1,32 @@
--- // Loader — by NG/Cooler
-
--- // Config
-local Branch = "main"
-local BaseURL = "https://raw.githubusercontent.com/stgcent-dotcom/PRACTICAL/refs/heads/" .. Branch .. "/"
-
 -- // Services
 local Players = game:GetService("Players")
 
 -- // Variables
 local LocalPlayer = Players.LocalPlayer
 
--- // Key
-getgenv().lp_key = lp_key
-
--- // GameId -> Script
+-- // Game Loaders
 local GameMap = {
     -- // Practical
-    [80681221431821] = "practical",
-    [119587547774646] = "practical",
-    [118669925076970] = "practical",
-    [85576197307056] = "practical",
+    [80681221431821] = "https://luaprot.net/api/v2/loaders/get/65280216017055023979",
+    [119587547774646] = "https://luaprot.net/api/v2/loaders/get/65280216017055023979",
+    [118669925076970] = "https://luaprot.net/api/v2/loaders/get/65280216017055023979",
+    [85576197307056] = "https://luaprot.net/api/v2/loaders/get/65280216017055023979",
 
     -- // FF3
-    [82866880824588] = "ff3",
-    [81310542478972] = "ff3"
+    [82866880824588] = "https://luaprot.net/api/v2/loaders/get/12204848190578633176",
+    [81310542478972] = "https://luaprot.net/api/v2/loaders/get/12204848190578633176"
 }
 
 -- // Loader
-local PlaceId = game.PlaceId
-local ScriptFile = GameMap[PlaceId]
+local LoaderURL = GameMap[game.PlaceId]
 
-if not ScriptFile then
+if not LoaderURL then
     LocalPlayer:Kick("[-]: This game is not supported.")
     return
 end
 
 local Success, Error = pcall(function()
-    loadstring(game:HttpGet(BaseURL .. ScriptFile))()
+    loadstring(game:HttpGet(LoaderURL))()
 end)
 
 if not Success then
