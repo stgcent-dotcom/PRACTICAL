@@ -14,6 +14,7 @@ local GameMap = {
     [119587547774646] = "https://luaprot.net/api/v2/loaders/get/65280216017055023979",
     [118669925076970] = "https://luaprot.net/api/v2/loaders/get/65280216017055023979",
     [85576197307056] = "https://luaprot.net/api/v2/loaders/get/65280216017055023979",
+    [104645279125178] = "https://luaprot.net/api/v2/loaders/get/65280216017055023979",
 
     -- // FF3
     [82866880824588] = "https://luaprot.net/api/v2/loaders/get/12204848190578633176",
