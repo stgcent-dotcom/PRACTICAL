@@ -10,6 +10,9 @@ local Players = game:GetService("Players")
 -- // Variables
 local LocalPlayer = Players.LocalPlayer
 
+-- // Key
+getgenv().lp_key = lp_key
+
 -- // GameId -> Script
 local GameMap = {
     -- // Practical
