@@ -23,7 +23,7 @@ local GameMap = {
 }
 
 -- // Loader
-local GameId = game.GameId
+local GameId = game.PlaceId
 local ScriptFile = GameMap[GameId]
 
 if not ScriptFile then
