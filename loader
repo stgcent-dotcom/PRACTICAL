@@ -13,18 +13,19 @@ local LocalPlayer = Players.LocalPlayer
 -- // GameId -> Script
 local GameMap = {
     -- // Practical
+    [80681221431821] = "practical",
     [119587547774646] = "practical",
     [118669925076970] = "practical",
     [85576197307056] = "practical",
-    [7529591378] = "practical",
 
     -- // FF3
-    [9908641400] = "ff3",
+    [82866880824588] = "ff3",
+    [81310542478972] = "ff3"
 }
 
 -- // Loader
-local GameId = game.PlaceId
-local ScriptFile = GameMap[GameId]
+local PlaceId = game.PlaceId
+local ScriptFile = GameMap[PlaceId]
 
 if not ScriptFile then
     LocalPlayer:Kick("[-]: This game is not supported.")
