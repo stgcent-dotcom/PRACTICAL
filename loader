@@ -4,6 +4,9 @@ local Players = game:GetService("Players")
 -- // Variables
 local LocalPlayer = Players.LocalPlayer
 
+-- // Key
+getgenv().lp_key = lp_key
+
 -- // Game Loaders
 local GameMap = {
     -- // Practical
@@ -25,10 +28,4 @@ if not LoaderURL then
     return
 end
 
-local Success, Error = pcall(function()
-    loadstring(game:HttpGet(LoaderURL))()
-end)
-
-if not Success then
-    LocalPlayer:Kick("[-]:\nFailed to load script.\n" .. tostring(Error))
-end
+loadstring(game:HttpGet(LoaderURL))()
