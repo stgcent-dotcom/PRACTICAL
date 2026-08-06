@@ -12,8 +12,14 @@ local LocalPlayer = Players.LocalPlayer
 
 -- // GameId -> Script
 local GameMap = {
-    [7529591378] = "practical.lua", -- Practical
-    [9908641400] = "ff3.lua",       -- FF3
+    -- // Practical
+    [119587547774646] = "practical",
+    [118669925076970] = "practical",
+    [85576197307056] = "practical",
+    [7529591378] = "practical",
+
+    -- // FF3
+    [9908641400] = "ff3",
 }
 
 -- // Loader
