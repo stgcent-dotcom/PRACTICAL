@@ -4,8 +4,11 @@ local Players = game:GetService("Players")
 -- // Variables
 local LocalPlayer = Players.LocalPlayer
 
--- // Key
-getgenv().lp_key = lp_key
+-- // Key Validation Check
+if not getgenv().lp_key then
+    LocalPlayer:Kick("[-]: Error - lp_key is not defined!")
+    return
+end
 
 -- // Game Loaders
 local GameMap = {
@@ -30,4 +33,24 @@ if not LoaderURL then
     return
 end
 
-loadstring(game:HttpGet(LoaderURL))()
+-- // Fetch and Safe Load
+local success, response = pcall(function()
+    return game:HttpGet(LoaderURL)
+end)
+
+if not success then
+    LocalPlayer:Kick("[-]: Failed to connect to the loader API.")
+    return
+end
+
+local fn, syntaxError = loadstring(response)
+
+if not fn then
+    print("--- LUAPROT ERROR RESPONSE ---")
+    print(response) -- This will show you if the API returned an error message instead of code
+    print("------------------------------")
+    LocalPlayer:Kick("[-]: Failed to load script. Check console for details.")
+    error(syntaxError)
+end
+
+fn()
