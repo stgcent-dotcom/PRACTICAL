@@ -1,0 +1,549 @@
+--[[
+    NovaUI Full Feature Demo
+    ========================
+    Replace the loadstring URL with your raw GitHub URL after upload.
+    This script demonstrates every element NovaUI ships:
+        Toggle (with keybind), Slider, Keybind picker, Dropdown,
+        Multi-Dropdown, ColorPicker, Textbox, Button, Buttons (multi),
+        Label, Title, Divider, Section, TabbedSection, MenuKeybind,
+        Notifications, Config Manager, Unload/Panic, live theme recolor,
+        SetMenuKey, SetKeybindListEnabled, Library.Unloaded loop guard.
+
+    Load with:
+        local Library = loadstring(game:HttpGet("YOUR_RAW_GITHUB_URL"))()
+]]
+
+----------------------------------------------------------------
+-- LOAD THE LIBRARY
+-- Replace this URL with your raw GitHub URL after upload.
+----------------------------------------------------------------
+local Library = loadstring(game:HttpGet(
+    "https://raw.githubusercontent.com/YOURUSER/nova-ui/main/NovaUI.lua"
+))()
+
+----------------------------------------------------------------
+-- WINDOW
+-- Title:        "NOVA ui" — first word plain, rest accent-colored
+-- Size:         580 x 560 (default, override freely)
+-- MenuKeybind:  RightShift to show/hide (overridden in Settings tab below)
+----------------------------------------------------------------
+local win = Library:Window({
+    Title       = "NOVA ui",
+    Size        = UDim2.fromOffset(580, 560),
+    MenuKeybind = Enum.KeyCode.RightShift,
+})
+
+----------------------------------------------------------------
+-- NOTIFICATION  (fires immediately on load to confirm it works)
+----------------------------------------------------------------
+Library:Notify({
+    Title    = "nova loaded",
+    Content  = "all features active — RightShift to hide menu.",
+    Duration = 4,
+})
+
+----------------------------------------------------------------
+-- TAB 1 — MAIN
+-- Covers: Toggle, Slider, Dropdown, Button, Label, Divider, Title
+----------------------------------------------------------------
+local tabMain  = win:Tab("Main")
+local sectCore = tabMain:Section({ Title = "Core Controls" })
+
+-- Title (bold section header inside a panel)
+sectCore:Title("Toggles")
+
+-- Toggle with keybind
+local toggleAimbot = sectCore:Toggle({
+    Text     = "Aimbot",
+    Default  = false,
+    Flag     = "aimbotEnabled",
+    Keybind  = Enum.KeyCode.E,
+    Callback = function(state)
+        print("[nova] Aimbot:", state)
+    end,
+})
+
+-- Toggle with a different default key
+local toggleESP = sectCore:Toggle({
+    Text     = "ESP",
+    Default  = false,
+    Flag     = "espEnabled",
+    Keybind  = Enum.KeyCode.Q,
+    Callback = function(state)
+        print("[nova] ESP:", state)
+    end,
+})
+
+sectCore:Divider()
+sectCore:Title("Sliders")
+
+-- Slider — integer, no suffix
+local sliderFOV = sectCore:Slider({
+    Text     = "FOV",
+    Min      = 50,
+    Max      = 120,
+    Default  = 90,
+    Decimals = 0,
+    Flag     = "fovValue",
+    Callback = function(val)
+        print("[nova] FOV:", val)
+    end,
+})
+
+-- Slider — decimal with suffix
+local sliderSmooth = sectCore:Slider({
+    Text     = "Smoothness",
+    Min      = 0.1,
+    Max      = 10.0,
+    Default  = 3.0,
+    Decimals = 1,
+    Suffix   = "x",
+    Flag     = "smoothValue",
+    Callback = function(val)
+        print("[nova] Smoothness:", val)
+    end,
+})
+
+-- Slider — percent suffix
+local sliderOpacity = sectCore:Slider({
+    Text     = "ESP Opacity",
+    Min      = 0,
+    Max      = 100,
+    Default  = 80,
+    Decimals = 0,
+    Suffix   = "%",
+    Flag     = "espOpacity",
+    Callback = function(val)
+        print("[nova] ESP Opacity:", val)
+    end,
+})
+
+-- RIGHT column — dropdowns + buttons
+local sectRight = tabMain:Section({ Title = "Selection", Side = "Right" })
+
+sectRight:Title("Dropdown (single)")
+
+-- Single dropdown
+local dropTarget = sectRight:Dropdown({
+    Text    = "Target Part",
+    Options = { "Head", "Torso", "Left Arm", "Right Arm", "Left Leg", "Right Leg" },
+    Default = "Head",
+    Flag    = "targetPart",
+    Callback = function(val)
+        print("[nova] Target Part:", val)
+    end,
+})
+
+sectRight:Divider()
+sectRight:Title("Multi-Dropdown")
+
+-- Multi-select dropdown
+local dropTeams = sectRight:Dropdown({
+    Text    = "Visible Teams",
+    Multi   = true,
+    Options = { "Team A", "Team B", "Team C", "Spectators" },
+    Default = { "Team A", "Team B" },
+    Flag    = "visibleTeams",
+    Callback = function(selected)
+        print("[nova] Teams:", table.concat(selected, ", "))
+    end,
+})
+
+sectRight:Divider()
+sectRight:Title("Buttons")
+
+-- Single button
+sectRight:Button({
+    Text     = "Print All Flags",
+    Callback = function()
+        for flag, entry in pairs(Library._flags) do
+            local v = entry.Get()
+            if typeof(v) == "Color3" then
+                v = string.format("rgb(%d,%d,%d)",
+                    math.floor(v.R*255+0.5),
+                    math.floor(v.G*255+0.5),
+                    math.floor(v.B*255+0.5))
+            elseif typeof(v) == "EnumItem" then
+                v = v.Name
+            end
+            print(string.format("[flag] %s = %s", flag, tostring(v)))
+        end
+    end,
+})
+
+-- Multi-button row
+sectRight:Buttons({
+    {
+        Text     = "Toggle Aimbot",
+        Callback = function()
+            local cur = toggleAimbot:Get()
+            toggleAimbot:Set(not cur)
+        end,
+    },
+    {
+        Text     = "Toggle ESP",
+        Callback = function()
+            local cur = toggleESP:Get()
+            toggleESP:Set(not cur)
+        end,
+    },
+})
+
+-- Programmatic setter demo via button
+sectRight:Button({
+    Text     = "Reset FOV to 90",
+    Callback = function()
+        sliderFOV:Set(90)
+        Library:Notify({ Title = "FOV reset", Content = "Set back to 90.", Duration = 2 })
+    end,
+})
+
+-- Dynamic label that updates
+local statusLabel = sectRight:Label("Status: idle")
+sectRight:Button({
+    Text     = "Update Label",
+    Callback = function()
+        statusLabel:Set("Status: active — " .. os.date("%X"))
+    end,
+})
+
+----------------------------------------------------------------
+-- TAB 2 — COLORS
+-- Covers: ColorPicker, live SetThemeColor, Label
+----------------------------------------------------------------
+local tabColors = win:Tab("Colors")
+local sectColors = tabColors:Section({ Title = "ESP Colors" })
+
+sectColors:Label("Click the swatch to open the color picker.")
+
+local cpBox = sectColors:ColorPicker({
+    Text    = "Box Color",
+    Default = Color3.fromRGB(255, 80, 80),
+    Flag    = "espBoxColor",
+    Callback = function(color)
+        print(string.format("[nova] Box Color: rgb(%d,%d,%d)",
+            math.floor(color.R*255+0.5),
+            math.floor(color.G*255+0.5),
+            math.floor(color.B*255+0.5)))
+    end,
+})
+
+local cpName = sectColors:ColorPicker({
+    Text    = "Name Color",
+    Default = Color3.fromRGB(255, 255, 255),
+    Flag    = "espNameColor",
+    Callback = function(color)
+        print("[nova] Name Color changed")
+    end,
+})
+
+local cpHealth = sectColors:ColorPicker({
+    Text    = "Health Bar Color",
+    Default = Color3.fromRGB(80, 220, 80),
+    Flag    = "espHealthColor",
+    Callback = function(color)
+        print("[nova] Health Color changed")
+    end,
+})
+
+sectColors:Divider()
+
+-- Live theme recolor — changes the UI accent color in real time
+local sectTheme = tabColors:Section({ Title = "Live Theme", Side = "Right" })
+sectTheme:Label("Changes the UI accent color live.")
+
+local cpAccent = sectTheme:ColorPicker({
+    Text    = "Accent Color",
+    Default = Color3.fromRGB(124, 140, 238),
+    Flag    = "themeAccent",
+    Callback = function(color)
+        Library:SetThemeColor("Accent", color)
+    end,
+})
+
+sectTheme:Button({
+    Text     = "Reset Theme",
+    Callback = function()
+        Library:ResetTheme()
+        -- sync the picker back to the default accent
+        cpAccent:Set(Color3.fromRGB(124, 140, 238))
+        Library:Notify({ Title = "Theme reset", Duration = 2 })
+    end,
+})
+
+----------------------------------------------------------------
+-- TAB 3 — INPUT
+-- Covers: Keybind, Textbox, MenuKeybind, SetKeybindListEnabled
+----------------------------------------------------------------
+local tabInput = win:Tab("Input")
+local sectKeys = tabInput:Section({ Title = "Keybinds" })
+
+sectKeys:Label("Click a key box, then press any key. Esc or Backspace clears it.")
+
+-- Standalone keybind element (fires callback when key is pressed)
+local kbPanic = sectKeys:Keybind({
+    Text    = "Panic Key",
+    Default = Enum.KeyCode.Delete,
+    Flag    = "panicKey",
+    Callback = function()
+        Library:PanicAllToggles()
+        Library:Notify({ Title = "Panic", Content = "All toggles OFF.", Duration = 3 })
+    end,
+    ChangedCallback = function(key)
+        print("[nova] Panic key changed to:", key and key.Name or "none")
+    end,
+})
+
+-- Keybind that only tracks (Fire = false)
+local kbTrack = sectKeys:Keybind({
+    Text    = "Tracked Key (no fire)",
+    Default = Enum.KeyCode.F5,
+    Flag    = "trackedKey",
+    Fire    = false,
+    ChangedCallback = function(key)
+        print("[nova] Tracked key changed to:", key and key.Name or "none")
+    end,
+})
+
+sectKeys:Divider()
+
+-- Rebindable hide-menu key (wired to the window automatically)
+sectKeys:MenuKeybind({
+    Text    = "Hide Menu Key",
+    Default = Enum.KeyCode.RightShift,
+    Flag    = "menuKey",
+})
+
+sectKeys:Divider()
+
+-- Toggle keybind list panel
+local kbListEnabled = true
+sectKeys:Toggle({
+    Text    = "Show Keybind List",
+    Default = true,
+    Callback = function(state)
+        kbListEnabled = state
+        win:SetKeybindListEnabled(state)
+    end,
+})
+
+-- Textboxes
+local sectText = tabInput:Section({ Title = "Textboxes", Side = "Right" })
+sectText:Label("FocusLost fires the callback (Enter or click away).")
+
+local tbPlayerName = sectText:Textbox({
+    Text        = "Target Player",
+    Placeholder = "player name...",
+    Default     = "",
+    Flag        = "targetPlayer",
+    Callback    = function(text, enterPressed)
+        print(string.format("[nova] Target: '%s' (enter=%s)", text, tostring(enterPressed)))
+    end,
+})
+
+local tbCustomMsg = sectText:Textbox({
+    Text        = "Custom Message",
+    Placeholder = "type something...",
+    Default     = "hello world",
+    Flag        = "customMsg",
+    Callback    = function(text)
+        print("[nova] Message:", text)
+    end,
+})
+
+sectText:Button({
+    Text     = "Read Textbox Values",
+    Callback = function()
+        print("[nova] Player:", tbPlayerName:Get())
+        print("[nova] Message:", tbCustomMsg:Get())
+    end,
+})
+
+sectText:Button({
+    Text     = "Clear Both",
+    Callback = function()
+        tbPlayerName:Set("")
+        tbCustomMsg:Set("")
+    end,
+})
+
+----------------------------------------------------------------
+-- TAB 4 — TABBED SECTIONS
+-- Covers: TabbedSection with unlimited sub-tabs
+----------------------------------------------------------------
+local tabAdvanced = win:Tab("Advanced")
+
+-- TabbedSection — left column
+local subTabs = tabAdvanced:TabbedSection({
+    Tabs = { "Movement", "Combat", "Visuals" },
+    Side = "Left",
+})
+
+-- Movement sub-tab
+subTabs["Movement"]:Title("Movement Settings")
+subTabs["Movement"]:Toggle({
+    Text    = "Speed Hack",
+    Default = false,
+    Flag    = "speedEnabled",
+    Callback = function(state) print("[nova] Speed:", state) end,
+})
+subTabs["Movement"]:Slider({
+    Text     = "Walk Speed",
+    Min      = 16,
+    Max      = 500,
+    Default  = 16,
+    Flag     = "walkSpeed",
+    Callback = function(val) print("[nova] WalkSpeed:", val) end,
+})
+subTabs["Movement"]:Slider({
+    Text     = "Jump Power",
+    Min      = 7,
+    Max      = 200,
+    Default  = 7,
+    Flag     = "jumpPower",
+    Callback = function(val) print("[nova] JumpPower:", val) end,
+})
+subTabs["Movement"]:Toggle({
+    Text    = "Noclip",
+    Default = false,
+    Flag    = "noclipEnabled",
+    Callback = function(state) print("[nova] Noclip:", state) end,
+})
+
+-- Combat sub-tab
+subTabs["Combat"]:Title("Combat Settings")
+subTabs["Combat"]:Toggle({
+    Text    = "Auto Shoot",
+    Default = false,
+    Flag    = "autoShoot",
+    Callback = function(state) print("[nova] AutoShoot:", state) end,
+})
+subTabs["Combat"]:Slider({
+    Text     = "Hit Chance",
+    Min      = 0,
+    Max      = 100,
+    Default  = 100,
+    Decimals = 0,
+    Suffix   = "%",
+    Flag     = "hitChance",
+    Callback = function(val) print("[nova] HitChance:", val) end,
+})
+subTabs["Combat"]:Dropdown({
+    Text    = "Bullet Type",
+    Options = { "Normal", "Explosive", "Tracer" },
+    Default = "Normal",
+    Flag    = "bulletType",
+    Callback = function(val) print("[nova] BulletType:", val) end,
+})
+
+-- Visuals sub-tab
+subTabs["Visuals"]:Title("Visual Settings")
+subTabs["Visuals"]:Toggle({
+    Text    = "Fullbright",
+    Default = false,
+    Flag    = "fullbright",
+    Callback = function(state) print("[nova] Fullbright:", state) end,
+})
+subTabs["Visuals"]:Toggle({
+    Text    = "Remove Fog",
+    Default = false,
+    Flag    = "removeFog",
+    Callback = function(state) print("[nova] RemoveFog:", state) end,
+})
+subTabs["Visuals"]:ColorPicker({
+    Text    = "Sky Color",
+    Default = Color3.fromRGB(135, 206, 235),
+    Flag    = "skyColor",
+    Callback = function(color) print("[nova] SkyColor changed") end,
+})
+
+-- Right column — plain section alongside the tabbed one
+local sectMisc = tabAdvanced:Section({ Title = "Misc", Side = "Right" })
+sectMisc:Toggle({
+    Text    = "Anti-AFK",
+    Default = false,
+    Flag    = "antiAfk",
+    Callback = function(state) print("[nova] AntiAFK:", state) end,
+})
+sectMisc:Toggle({
+    Text    = "Infinite Jump",
+    Default = false,
+    Flag    = "infJump",
+    Callback = function(state) print("[nova] InfJump:", state) end,
+})
+sectMisc:Dropdown({
+    Text    = "Camera Mode",
+    Options = { "Default", "Locked", "Follow" },
+    Default = "Default",
+    Flag    = "cameraMode",
+    Callback = function(val) print("[nova] Camera:", val) end,
+})
+sectMisc:Divider()
+sectMisc:Label("These flags are all saved to config.")
+
+----------------------------------------------------------------
+-- TAB 5 — SETTINGS
+-- Covers: Config Manager, Notify test, Unload, Panic button
+----------------------------------------------------------------
+local tabSettings = win:Tab("Settings")
+local sectConfig  = tabSettings:Section({ Title = "Config Manager" })
+
+-- One-call config UI: name textbox + dropdown + Save/Load/Delete/Refresh buttons + status label
+sectConfig:ConfigManager()
+
+local sectSystem = tabSettings:Section({ Title = "System", Side = "Right" })
+sectSystem:Label("Panic turns off every toggle instantly.")
+
+sectSystem:Button({
+    Text     = "Panic (all OFF)",
+    Callback = function()
+        Library:PanicAllToggles()
+        Library:Notify({ Title = "Panic", Content = "All toggles disabled.", Duration = 3 })
+    end,
+})
+
+sectSystem:Divider()
+
+sectSystem:Button({
+    Text     = "Test Notification",
+    Callback = function()
+        Library:Notify({
+            Title    = "Test",
+            Content  = "Notification system working. Duration: 4s.",
+            Duration = 4,
+        })
+    end,
+})
+
+sectSystem:Button({
+    Text     = "Notify (title only)",
+    Callback = function()
+        Library:Notify({ Title = "title-only notify", Duration = 3 })
+    end,
+})
+
+sectSystem:Divider()
+
+sectSystem:Button({
+    Text     = "Unload NovaUI",
+    Callback = function()
+        Library:Notify({ Title = "unloading...", Duration = 1 })
+        task.delay(1, function()
+            Library:Unload()
+        end)
+    end,
+})
+
+----------------------------------------------------------------
+-- UNLOAD GUARD
+-- Any loop in your script that touches Library state should
+-- check Library.Unloaded and bail if true.
+----------------------------------------------------------------
+task.spawn(function()
+    while not Library.Unloaded do
+        -- your per-frame or polling logic goes here
+        -- e.g. ESP draw loop, aimbot tick, etc.
+        task.wait(0.1)
+    end
+    print("[nova] Library unloaded — loop exited clean.")
+end)
