@@ -22,6 +22,11 @@ local GameMap = {
     [10266164381] = "https://luaprot.net/api/v2/loaders/get/90749613853207248358",
     [81310542478972] = "https://luaprot.net/api/v2/loaders/get/12204848190578633176",
 
+    -- // Precise Basketball
+    [94273024358423] = "https://luaprot.net/api/v2/loaders/get/12204848190578633176",
+    [97849173929009] = "https://luaprot.net/api/v2/loaders/get/12204848190578633176",
+    [85429102998371] = "https://luaprot.net/api/v2/loaders/get/12204848190578633176",
+
     -- // Playground
     [18474349316] = "https://luaprot.net/api/v2/loaders/get/53119934604803765105",
     [18474347948] = "https://luaprot.net/api/v2/loaders/get/53119934604803765105",
